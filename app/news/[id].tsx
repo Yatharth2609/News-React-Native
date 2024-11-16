@@ -16,22 +16,16 @@ import { Colors } from "@/constants/Colors";
 import Moment from "moment";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-type Props = {};
-
-const NewsDetails = (props: Props) => {
+const NewsDetails = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [News, setNews] = useState<NewsDataType[]>([]);
+  const [news, setNews] = useState<NewsDataType | null>(null);
   const [loading, setLoading] = useState(true);
   const [bookmark, setBookmark] = useState(false);
 
   useEffect(() => {
     getNews();
-  }, []);
-
-  useEffect(() => {
-    if(!loading)
-    renderBookmark(News[0].article_id);
-  }, [loading]);
+    checkBookmarkStatus();
+  }, [id]);
 
   const getNews = async () => {
     try {
@@ -39,61 +33,80 @@ const NewsDetails = (props: Props) => {
       const URL = `https://newsdata.io/api/1/news?apikey=${process.env.EXPO_PUBLIC_API_KEY}&id=${id}`;
       const response = await axios.get(URL);
 
-      if (response?.data?.results) {
-        // Filter out items without images
-        const newsWithImages = response.data.results.filter(
-          (item: NewsDataType) => item.image_url
-        );
-        setNews(newsWithImages);
+      if (response?.data?.results && response.data.results.length > 0) {
+        const newsItem = response.data.results[0];
+        if (newsItem.image_url) {
+          setNews(newsItem);
+        }
       }
     } catch (error: any) {
-      console.error("Error fetching breaking news:", error.message);
+      console.error("Error fetching news:", error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const saveBookmark = async (newsId: string) => {
-    setBookmark(true);
-    await AsyncStorage.getItem("boookmark").then((token: any) => {
-      const res = JSON.parse(token);
-      if (res !== null) {
-        let data = res.find((value: string) => value === newsId);
-        if (data === null) {
-          res.push(newsId);
-          AsyncStorage.setItem("bookmark", JSON.stringify(res));
-          alert("News Saved!!");
-        }
+  const checkBookmarkStatus = async () => {
+    try {
+      const bookmarksStr = await AsyncStorage.getItem("bookmark");
+      if (bookmarksStr) {
+        const bookmarks = JSON.parse(bookmarksStr);
+        setBookmark(bookmarks.includes(id));
       } else {
-        let bookmark = [];
-        bookmark.push(newsId);
-        AsyncStorage.setItem("bookmark", JSON.stringify(bookmark));
-        alert("News Saved!!");
+        setBookmark(false);
       }
-    });
+    } catch (error) {
+      console.error("Error checking bookmark status:", error);
+      setBookmark(false);
+    }
   };
 
-  const removeBookmark = async (newsId: string) => {
-    setBookmark(false);
-    const bookmark = await AsyncStorage.getItem("bookmark").then(
-      (token: any) => {
-        const res = JSON.parse(token);
-        return res.filter((id: string) => id !== newsId);
+  const saveBookmark = async () => {
+    try {
+      const bookmarksStr = await AsyncStorage.getItem("bookmark");
+      let bookmarks: string[] = [];
+      
+      if (bookmarksStr) {
+        bookmarks = JSON.parse(bookmarksStr);
       }
+
+      if (!bookmarks.includes(id)) {
+        bookmarks.push(id);
+        await AsyncStorage.setItem("bookmark", JSON.stringify(bookmarks));
+        setBookmark(true);
+        alert("News Saved!");
+      }
+    } catch (error) {
+      console.error("Error saving bookmark:", error);
+    }
+  };
+
+  const removeBookmark = async () => {
+    try {
+      const bookmarksStr = await AsyncStorage.getItem("bookmark");
+      if (bookmarksStr) {
+        const bookmarks = JSON.parse(bookmarksStr);
+        const updatedBookmarks = bookmarks.filter((bookmarkId: string) => bookmarkId !== id);
+        await AsyncStorage.setItem("bookmark", JSON.stringify(updatedBookmarks));
+        setBookmark(false);
+        alert("News Unsaved!");
+      }
+    } catch (error) {
+      console.error("Error removing bookmark:", error);
+    }
+  };
+
+  if (loading) {
+    return <Loading size="large" color="#0000ff" />;
+  }
+
+  if (!news) {
+    return (
+      <View style={styles.container}>
+        <Text>No news found</Text>
+      </View>
     );
-    await AsyncStorage.setItem("bookmark", JSON.stringify(bookmark));
-    alert("News Unsaved!!");
-  };
-
-  const renderBookmark = async (newsId: string) => {
-    await AsyncStorage.getItem("bookmark").then((token: any) => {
-      const res = JSON.parse(token);
-      if (res !== null) {
-        let data = res.find((value: string) => value === newsId);
-        return data === null ? setBookmark(false) : setBookmark(true);
-      }
-    });
-  };
+  }
 
   return (
     <>
@@ -106,11 +119,7 @@ const NewsDetails = (props: Props) => {
           ),
           headerRight: () => (
             <TouchableOpacity
-              onPress={() =>
-                bookmark
-                  ? removeBookmark(News[0].article_id)
-                  : saveBookmark(News[0].article_id)
-              }
+              onPress={() => (bookmark ? removeBookmark() : saveBookmark())}
             >
               <Ionicons
                 name={bookmark ? "heart" : "heart-outline"}
@@ -122,25 +131,20 @@ const NewsDetails = (props: Props) => {
           title: "",
         }}
       />
-      {loading ? (
-        <Loading size={"large"} color="#0000ff" />
-      ) : (
-        <ScrollView
-          contentContainerStyle={styles.contentContainer}
-          style={styles.container}
-        >
-          <Text style={styles.title}>{News[0].title}</Text>
-          <View style={styles.newsInfoWrapper}>
-            <Text style={styles.newsInfo}>
-              {Moment(News[0].pubDate).format("MMMM DD, hh:mm a")}
-            </Text>
-            <Text style={styles.newsInfo}>{News[0].source_name}</Text>
-          </View>
-          <Image source={{ uri: News[0].image_url }} style={styles.imgSource} />
-
-          <Text style={styles.newsContent}>{News[0].description}</Text>
-        </ScrollView>
-      )}
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        style={styles.container}
+      >
+        <Text style={styles.title}>{news.title}</Text>
+        <View style={styles.newsInfoWrapper}>
+          <Text style={styles.newsInfo}>
+            {Moment(news.pubDate).format("MMMM DD, hh:mm a")}
+          </Text>
+          <Text style={styles.newsInfo}>{news.source_name}</Text>
+        </View>
+        <Image source={{ uri: news.image_url }} style={styles.imgSource} />
+        <Text style={styles.newsContent}>{news.description}</Text>
+      </ScrollView>
     </>
   );
 };

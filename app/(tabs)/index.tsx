@@ -16,6 +16,7 @@ const Page = () => {
   const [News, setNews] = useState<NewsDataType[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCategory, setCurrentCategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState();
 
   useEffect(() => {
     getBreakingNews();
@@ -78,7 +79,7 @@ const Page = () => {
   return (
     <ScrollView style={[styles.container, { paddingTop: safeTop }]}>
       <Header />
-      <SearchBar withHorizontalPadding={true} />
+      <SearchBar withHorizontalPadding={true} setSearchQuery={setSearchQuery}/>
       {loading ? (
         <View style={styles.loadingContainer}>
           <Loading size={'large'} color="#0000ff"/>
