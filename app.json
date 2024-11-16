@@ -1,10 +1,14 @@
 {
   "expo": {
-    "name": "expo-news-app-starter",
-    "slug": "expo-news-app-starter",
+    "name": "Newzz",
+    "slug": "news-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
+    "platform": [
+      "ios",
+      "android"
+    ],
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -13,13 +17,16 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
+      "bundleIdentifier": "com.chase.newzz",
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
+        "package": "com.chase.newzz",
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.chase.newzz"
     },
     "web": {
       "bundler": "metro",
@@ -31,6 +38,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "20b99b25-274c-436f-88ad-2ef798a190d2"
+      }
     }
   }
 }

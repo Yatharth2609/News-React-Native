@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import SearchBar from "@/components/SearchBar";
@@ -21,7 +21,7 @@ const Page = (props: Props) => {
   const [country, setCountry] = useState("");
 
   return (
-    <View style={[styles.container, { paddingTop: safeTop + 20 }]}>
+    <ScrollView style={[styles.container, { paddingTop: safeTop + 20 }]}>
       <SearchBar
         withHorizontalPadding={false}
         setSearchQuery={setSearchQuery}
@@ -61,7 +61,7 @@ const Page = (props: Props) => {
           <Text style={styles.test}>Search</Text>
         </TouchableOpacity>
       </Link>
-    </View>
+    </ScrollView>
   );
 };
 
