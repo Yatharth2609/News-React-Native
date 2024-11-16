@@ -1,7 +1,15 @@
 import { NewsDataType } from "@/types";
 import { LinearGradient } from "expo-linear-gradient";
+import { Link } from "expo-router";
 import React from "react";
-import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -17,7 +25,7 @@ type Props = {
 };
 
 const { width } = Dimensions.get("screen");
-const ITEM_WIDTH = width * 0.8; // Reduced width to show adjacent slides
+const ITEM_WIDTH = width * 0.8;
 const SPACING = 10;
 
 const SliderItem = ({ slideItem, index, scrollX, totalItems }: Props) => {
@@ -25,11 +33,7 @@ const SliderItem = ({ slideItem, index, scrollX, totalItems }: Props) => {
     return null;
   }
 
-  const inputRange = [
-    (index - 1) * width,
-    index * width,
-    (index + 1) * width,
-  ];
+  const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
 
   const rnStyle = useAnimatedStyle(() => {
     const scale = interpolate(
@@ -53,70 +57,74 @@ const SliderItem = ({ slideItem, index, scrollX, totalItems }: Props) => {
   });
 
   return (
-    <View style={styles.itemWrapper}>
-      <Animated.View style={[styles.animatedContainer, rnStyle]}>
-        {slideItem.image_url && (
-          <Image
-            source={{ uri: slideItem.image_url }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-        )}
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.8)"]}
-          style={styles.background}
-        >
-          <View style={styles.contentContainer}>
-            <View style={styles.sourceInfo}>
-              {slideItem.source_icon && (
-                <Image
-                  source={{ uri: slideItem.source_icon }}
-                  style={styles.sourceIcon}
-                  resizeMode="cover"
-                />
-              )}
-              <Text style={styles.sourceName}>{slideItem.source_name}</Text>
-            </View>
-            <Text style={styles.title} numberOfLines={2}>
-              {slideItem.title}
-            </Text>
-          </View>
-        </LinearGradient>
-        
-        {/* Pagination Dots */}
-        <View style={styles.pagination}>
-          {Array(totalItems)
-            .fill(0)
-            .map((_, i) => {
-              const dotStyle = useAnimatedStyle(() => {
-                const scale = interpolate(
-                  scrollX.value,
-                  [(i - 1) * width, i * width, (i + 1) * width],
-                  [0.8, 1.4, 0.8],
-                  Extrapolation.CLAMP
-                );
-                const opacity = interpolate(
-                  scrollX.value,
-                  [(i - 1) * width, i * width, (i + 1) * width],
-                  [0.4, 1, 0.4],
-                  Extrapolation.CLAMP
-                );
-                return {
-                  transform: [{ scale }],
-                  opacity,
-                };
-              });
+    <Link href={`/news/${slideItem.article_id}`} asChild>
+      <TouchableOpacity>
+        <View style={styles.itemWrapper}>
+          <Animated.View style={[styles.animatedContainer, rnStyle]}>
+            {slideItem.image_url && (
+              <Image
+                source={{ uri: slideItem.image_url }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            )}
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.8)"]}
+              style={styles.background}
+            >
+              <View style={styles.contentContainer}>
+                <View style={styles.sourceInfo}>
+                  {slideItem.source_icon && (
+                    <Image
+                      source={{ uri: slideItem.source_icon }}
+                      style={styles.sourceIcon}
+                      resizeMode="cover"
+                    />
+                  )}
+                  <Text style={styles.sourceName}>{slideItem.source_name}</Text>
+                </View>
+                <Text style={styles.title} numberOfLines={2}>
+                  {slideItem.title}
+                </Text>
+              </View>
+            </LinearGradient>
 
-              return (
-                <Animated.View
-                  key={`dot-${i}`}
-                  style={[styles.dot, dotStyle]}
-                />
-              );
-            })}
+            {/* Pagination Dots */}
+            <View style={styles.pagination}>
+              {Array(totalItems)
+                .fill(0)
+                .map((_, i) => {
+                  const dotStyle = useAnimatedStyle(() => {
+                    const scale = interpolate(
+                      scrollX.value,
+                      [(i - 1) * width, i * width, (i + 1) * width],
+                      [0.8, 1.4, 0.8],
+                      Extrapolation.CLAMP
+                    );
+                    const opacity = interpolate(
+                      scrollX.value,
+                      [(i - 1) * width, i * width, (i + 1) * width],
+                      [0.4, 1, 0.4],
+                      Extrapolation.CLAMP
+                    );
+                    return {
+                      transform: [{ scale }],
+                      opacity,
+                    };
+                  });
+
+                  return (
+                    <Animated.View
+                      key={`dot-${i}`}
+                      style={[styles.dot, dotStyle]}
+                    />
+                  );
+                })}
+            </View>
+          </Animated.View>
         </View>
-      </Animated.View>
-    </View>
+      </TouchableOpacity>
+    </Link>
   );
 };
 
@@ -172,16 +180,16 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   pagination: {
-    flexDirection: 'row',
-    position: 'absolute',
+    flexDirection: "row",
+    position: "absolute",
     bottom: -25,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     marginHorizontal: 4,
   },
 });

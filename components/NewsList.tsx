@@ -1,8 +1,9 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { NewsDataType } from "@/types";
 import { Colors } from "@/constants/Colors";
 import Loading from "./Loading";
+import { Link } from "expo-router";
 
 type Props = {
   newsList: Array<NewsDataType>;
@@ -15,22 +16,32 @@ const NewsList = ({ newsList }: Props) => {
         <Loading size={"large"} color="#0000ff" />
       ) : (
         newsList.map((item, index) => (
-          <View key={index} style={styles.itemContainer}>
-            <Image source={{ uri: item.image_url }} style={styles.itemImg} />
-            <View style={styles.itemInfo}>
-              <Text style={styles.itemCat}>{item.category}</Text>
-              <Text style={styles.itemTitle}>{item.title}</Text>
-              <View style={styles.itemSourceInfo}>
-                <Image
-                  source={{ uri: item.source_icon }}
-                  style={styles.itemSourceImg}
-                />
-                <Text style={styles.itemSourceName}>{item.source_name}</Text>
-              </View>
-            </View>
-          </View>
+          <Link href={`/news/${item.article_id}`} asChild key={index}>
+            <TouchableOpacity>
+              <NewsItem item={item}/>
+            </TouchableOpacity>
+          </Link>
         ))
       )}
+    </View>
+  );
+};
+
+export const NewsItem = ({ item }: { item: NewsDataType }) => {
+  return (
+    <View style={styles.itemContainer}>
+      <Image source={{ uri: item.image_url }} style={styles.itemImg} />
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemCat}>{item.category}</Text>
+        <Text style={styles.itemTitle}>{item.title}</Text>
+        <View style={styles.itemSourceInfo}>
+          <Image
+            source={{ uri: item.source_icon }}
+            style={styles.itemSourceImg}
+          />
+          <Text style={styles.itemSourceName}>{item.source_name}</Text>
+        </View>
+      </View>
     </View>
   );
 };

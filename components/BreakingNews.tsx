@@ -33,7 +33,6 @@ const BreakingNews = ({ newsList }: Props) => {
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const interval = useRef<NodeJS.Timeout>();
   const offset = useSharedValue(0);
-  const { width } = useWindowDimensions();
 
   const onScrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
